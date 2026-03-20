@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+<meta name="theme-color" content="#0f0f13"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="BMI"/>
+<title>BMI Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0f0f13;--bg2:#16161d;--bg3:#1c1c26;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);
+  --text:#f2efe8;--text2:rgba(242,239,232,0.55);--text3:rgba(242,239,232,0.25);
+  --green:#a8f07a;--green-dim:rgba(168,240,122,0.1);
+  --yellow:#f0d97a;--yellow-dim:rgba(240,217,122,0.1);
+  --orange:#f0a87a;--orange-dim:rgba(240,168,122,0.1);
+  --red:#f07a7a;--red-dim:rgba(240,122,122,0.1);
+  --blue:#7ab4f0;--blue-dim:rgba(122,180,240,0.1);
+  --r:18px;--r2:13px;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Sora',system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:3px;}
+.app{display:flex;flex-direction:column;min-height:100dvh;}
+
+/* Topbar */
+.topbar{
+  padding:calc(env(safe-area-inset-top,0px)+14px) 20px 14px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(15,15,19,0.9);flex-shrink:0;
+  position:sticky;top:0;z-index:50;
+  border-bottom:0.5px solid var(--border);
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+}
+.logo{font-family:'Clash Display',sans-serif;font-size:20px;font-weight:700;letter-spacing:-.5px;display:flex;align-items:center;gap:8px;}
+.logo-badge{background:var(--green);color:#0f0f13;font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;letter-spacing:.8px;font-family:'Sora',sans-serif;}
+.unit-pill{display:flex;gap:3px;background:var(--bg3);border-radius:30px;padding:3px;}
+.up-btn{padding:5px 12px;border-radius:26px;border:none;font-size:11px;font-weight:600;font-family:'Sora',sans-serif;cursor:pointer;color:var(--text2);background:transparent;transition:all .2s;letter-spacing:.3px;}
+.up-btn.on{background:var(--green);color:#0f0f13;}
+
+/* Main */
+.main{flex:1;overflow-y:auto;padding:20px 16px calc(env(safe-area-inset-bottom,0px)+90px);}
+
+/* Section */
+.sec{font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--text3);margin:0 2px 10px;}
+
+/* Input Card */
+.input-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--r);padding:22px 20px;margin-bottom:14px;}
+.slider-row{margin-bottom:24px;}
+.slider-row:last-of-type{margin-bottom:6px;}
+.sr-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;}
+.sr-name{font-size:13px;color:var(--text2);}
+.sr-right{display:flex;align-items:baseline;gap:4px;}
+.sr-val{font-family:'Clash Display',sans-serif;font-size:32px;font-weight:600;line-height:1;}
+.sr-unit{font-size:12px;color:var(--text3);font-family:'Sora',sans-serif;}
+input[type=range]{
+  -webkit-appearance:none;width:100%;height:3px;border-radius:3px;outline:none;cursor:pointer;
+  background:linear-gradient(to right,var(--green) 0%,var(--green) var(--p,50%),var(--bg3) var(--p,50%),var(--bg3) 100%);
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:20px;height:20px;border-radius:50%;
+  background:var(--text);border:2.5px solid var(--bg);cursor:pointer;
+  box-shadow:0 0 0 4px rgba(242,239,232,0.08);
+}
+.gender-row{display:flex;gap:8px;margin-top:20px;}
+.g-btn{
+  flex:1;padding:12px 8px;border-radius:var(--r2);border:1px solid var(--border);
+  background:transparent;color:var(--text2);font-size:13px;font-weight:500;
+  font-family:'Sora',sans-serif;cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;gap:7px;
+}
+.g-btn .gi{font-size:16px;}
+.g-btn.on{border-color:var(--green);color:var(--green);background:var(--green-dim);}
+
+/* Hero result */
+.hero{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--r);padding:22px 20px;margin-bottom:14px;display:none;position:relative;overflow:hidden;}
+.hero.show{display:block;}
+.hero::after{content:'';position:absolute;top:-80px;right:-80px;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,var(--glow,rgba(168,240,122,0.06)) 0%,transparent 70%);pointer-events:none;}
+
+.hero-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;}
+.hero-lbl{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:8px;}
+.hero-num{font-family:'Clash Display',sans-serif;font-size:84px;font-weight:700;line-height:1;transition:color .4s;}
+.hero-r{text-align:right;padding-top:10px;}
+.hero-status{font-size:15px;font-weight:600;transition:color .4s;margin-bottom:5px;}
+.hero-who{font-size:11px;color:var(--text3);margin-bottom:8px;}
+.risk-pill{display:inline-block;padding:4px 11px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:.3px;}
+
+/* Gauge */
+.gauge-wrap{display:flex;justify-content:center;margin:8px 0 18px;}
+.gauge-svg{width:210px;height:115px;overflow:visible;}
+
+/* Zone bar */
+.zbar-wrap{margin-bottom:20px;}
+.zbar{height:8px;border-radius:8px;display:flex;gap:3px;overflow:visible;}
+.zbar-s{height:100%;border-radius:3px;}
+.zbar-dot-row{position:relative;height:18px;margin-top:3px;}
+.zbar-dot{position:absolute;width:14px;height:14px;border-radius:50%;background:var(--text);transform:translateX(-50%);top:2px;transition:left .5s cubic-bezier(.34,1.56,.64,1);border:3px solid var(--bg);}
+.zbar-labels{display:flex;justify-content:space-between;margin-top:4px;}
+.zbar-labels span{font-size:10px;color:var(--text3);}
+
+/* Stat grid */
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px;}
+.sbox{background:var(--bg3);border-radius:var(--r2);padding:14px;}
+.sbox-l{font-size:10px;font-weight:600;letter-spacing:.7px;text-transform:uppercase;color:var(--text3);margin-bottom:7px;}
+.sbox-v{font-family:'Clash Display',sans-serif;font-size:18px;font-weight:600;}
+.sbox-s{font-size:11px;color:var(--text2);margin-top:4px;}
+
+/* Metrics */
+.mcard{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--r);padding:4px 20px;margin-bottom:14px;display:none;}
+.mcard.show{display:block;}
+.mrow{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:.5px solid var(--border);}
+.mrow:last-child{border-bottom:none;}
+.ml{display:flex;align-items:center;gap:10px;}
+.micon{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.mname{font-size:13px;color:var(--text2);}
+.mval{font-size:14px;font-weight:600;}
+
+/* Score */
+.scard{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--r);padding:22px 20px;margin-bottom:14px;display:none;}
+.scard.show{display:block;}
+.score-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;}
+.score-big{font-family:'Clash Display',sans-serif;font-size:56px;font-weight:700;line-height:1;}
+.score-tag{font-size:12px;color:var(--text3);margin-top:5px;letter-spacing:.4px;}
+.score-note{font-size:12px;color:var(--text2);line-height:1.7;max-width:170px;text-align:right;}
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:11px;}
+.bar-row:last-child{margin-bottom:0;}
+.bar-lbl{font-size:12px;color:var(--text2);width:90px;flex-shrink:0;}
+.bar-track{flex:1;height:5px;background:var(--bg3);border-radius:5px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:5px;transition:width .7s ease;}
+.bar-pct{font-size:12px;font-weight:600;width:36px;text-align:right;color:var(--text2);}
+
+/* Tips */
+.tcard{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:14px;display:none;}
+.tcard.show{display:block;}
+.tgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;}
+.tbox{background:var(--bg3);border-radius:var(--r2);padding:14px;}
+.tbox-icon{font-size:22px;margin-bottom:9px;}
+.tbox-title{font-size:12px;font-weight:600;margin-bottom:4px;}
+.tbox-desc{font-size:11px;color:var(--text2);line-height:1.65;}
+
+/* History */
+.hcard{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:14px;}
+.hhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.hclear{background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;font-family:'Sora',sans-serif;}
+.hempty{font-size:13px;color:var(--text3);text-align:center;padding:18px 0;}
+.hitem{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:.5px solid var(--border);}
+.hitem:last-child{border-bottom:none;}
+.hdot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.hinfo{flex:1;}
+.hbmi{font-family:'Clash Display',sans-serif;font-size:18px;font-weight:600;}
+.hmeta{font-size:11px;color:var(--text3);margin-top:2px;}
+.hright{text-align:right;}
+.hstatus{font-size:12px;font-weight:600;}
+.htime{font-size:10px;color:var(--text3);margin-top:2px;}
+
+/* Bottom */
+.bot{position:fixed;bottom:0;left:0;right:0;padding:12px 16px calc(env(safe-area-inset-bottom,0px)+12px);background:linear-gradient(to top,var(--bg) 65%,transparent);z-index:50;}
+.cta{width:100%;padding:16px;border-radius:var(--r);border:none;font-family:'Clash Display',sans-serif;font-size:17px;font-weight:700;letter-spacing:.3px;cursor:pointer;background:var(--green);color:#0f0f13;-webkit-tap-highlight-color:transparent;transition:all .15s;}
+.cta:active{opacity:.85;transform:scale(.98);}
+
+/* Toast */
+.toast{position:fixed;bottom:110px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--text);color:var(--bg);padding:10px 20px;border-radius:30px;font-size:13px;font-weight:600;opacity:0;transition:all .25s;z-index:100;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.anim{animation:fadeUp .4s ease both;}
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="topbar">
+  <div class="logo">BMI <span class="logo-badge">PRO</span></div>
+  <div class="unit-pill">
+    <button class="up-btn on" onclick="setUnit('metric',this)">กก./ซม.</button>
+    <button class="up-btn" onclick="setUnit('imperial',this)">ปอนด์/นิ้ว</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <p class="sec">ข้อมูลของคุณ</p>
+  <div class="input-card">
+    <div class="slider-row">
+      <div class="sr-top"><span class="sr-name">น้ำหนัก</span>
+        <div class="sr-right"><span class="sr-val" id="wVal">65</span><span class="sr-unit" id="wUnit">กก.</span></div>
+      </div>
+      <input type="range" id="weight" min="30" max="200" step="0.5" value="65" oninput="sync(this,'wVal')"/>
+    </div>
+    <div class="slider-row">
+      <div class="sr-top"><span class="sr-name">ส่วนสูง</span>
+        <div class="sr-right"><span class="sr-val" id="hVal">170</span><span class="sr-unit" id="hUnit">ซม.</span></div>
+      </div>
+      <input type="range" id="height" min="100" max="220" step="1" value="170" oninput="sync(this,'hVal')"/>
+    </div>
+    <div class="slider-row">
+      <div class="sr-top"><span class="sr-name">อายุ</span>
+        <div class="sr-right"><span class="sr-val" id="aVal">25</span><span class="sr-unit">ปี</span></div>
+      </div>
+      <input type="range" id="age" min="5" max="100" step="1" value="25" oninput="sync(this,'aVal')"/>
+    </div>
+    <div class="gender-row">
+      <button class="g-btn on" id="gM" onclick="setGender('male')"><span class="gi">♂</span> ชาย</button>
+      <button class="g-btn" id="gF" onclick="setGender('female')"><span class="gi">♀</span> หญิง</button>
+    </div>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero" id="hero">
+    <div class="hero-top">
+      <div><div class="hero-lbl">ดัชนีมวลกาย</div><div class="hero-num" id="heroNum">—</div></div>
+      <div class="hero-r">
+        <div class="hero-status" id="heroSt">—</div>
+        <div class="hero-who" id="heroWho">—</div>
+        <div class="risk-pill" id="heroRisk">—</div>
+      </div>
+    </div>
+    <!-- Gauge SVG -->
+    <div class="gauge-wrap">
+      <svg class="gauge-svg" viewBox="0 0 210 115">
+        <path d="M25 105 A80 80 0 0 1 185 105" stroke="#1c1c26" stroke-width="12" stroke-linecap="round" fill="none"/>
+        <path id="gArc" d="M25 105 A80 80 0 0 1 185 105" stroke="#a8f07a" stroke-width="12" stroke-linecap="round" fill="none" stroke-dasharray="252" stroke-dashoffset="252" style="transition:stroke-dashoffset .6s ease,stroke .4s;"/>
+        <circle id="gDot" cx="25" cy="105" r="7" fill="white" style="transition:cx .6s cubic-bezier(.34,1.56,.64,1),cy .6s cubic-bezier(.34,1.56,.64,1);"/>
+        <text x="105" y="78" text-anchor="middle" font-size="10" fill="rgba(242,239,232,0.2)" font-family="Sora,sans-serif">ผอม ← → อ้วน</text>
+        <text id="gLow" x="18" y="118" text-anchor="middle" font-size="9" fill="rgba(242,239,232,0.3)" font-family="Sora,sans-serif">10</text>
+        <text id="gHigh" x="192" y="118" text-anchor="middle" font-size="9" fill="rgba(242,239,232,0.3)" font-family="Sora,sans-serif">40</text>
+      </svg>
+    </div>
+    <!-- Zone bar -->
+    <div class="zbar-wrap">
+      <div class="zbar">
+        <div class="zbar-s" style="width:20%;background:#7af0a0;border-radius:4px 2px 2px 4px;"></div>
+        <div class="zbar-s" style="width:25%;background:#a8f07a;"></div>
+        <div class="zbar-s" style="width:25%;background:#f0d97a;"></div>
+        <div class="zbar-s" style="width:30%;background:#f07a7a;border-radius:2px 4px 4px 2px;"></div>
+      </div>
+      <div class="zbar-dot-row"><div class="zbar-dot" id="zDot" style="left:5%"></div></div>
+      <div class="zbar-labels"><span>ผอม &lt;18.5</span><span>ปกติ 18.5–22.9</span><span>เกิน 23–24.9</span><span>อ้วน ≥25</span></div>
+    </div>
+    <!-- Stats -->
+    <div class="sgrid">
+      <div class="sbox"><div class="sbox-l">น้ำหนักเหมาะสม</div><div class="sbox-v" id="sIdeal">—</div><div class="sbox-s">BMI 18.5 – 22.9</div></div>
+      <div class="sbox"><div class="sbox-l">ผลต่าง</div><div class="sbox-v" id="sDiff">—</div><div class="sbox-s" id="sDiffS">—</div></div>
+      <div class="sbox"><div class="sbox-l">BMR (พื้นฐาน)</div><div class="sbox-v" id="sBMR">—</div><div class="sbox-s">kcal/วัน</div></div>
+      <div class="sbox"><div class="sbox-l">TDEE (รักษาน้ำหนัก)</div><div class="sbox-v" id="sTDEE">—</div><div class="sbox-s">kcal/วัน</div></div>
+    </div>
+  </div>
+
+  <!-- Detailed Metrics -->
+  <p class="sec" id="lblM" style="display:none">ข้อมูลร่างกายโดยละเอียด</p>
+  <div class="mcard" id="mcard">
+    <div class="mrow"><div class="ml"><div class="micon" style="background:rgba(122,180,240,0.12)">💧</div><span class="mname">เปอร์เซ็นต์ไขมันในร่างกาย</span></div><span class="mval" id="mFat">—</span></div>
+    <div class="mrow"><div class="ml"><div class="micon" style="background:rgba(168,240,122,0.12)">🦴</div><span class="mname">น้ำหนักอุดมคติ (Devine)</span></div><span class="mval" id="mDevine">—</span></div>
+    <div class="mrow"><div class="ml"><div class="micon" style="background:rgba(240,217,122,0.12)">🔥</div><span class="mname">แคลอรี่เพื่อลดน้ำหนัก (–500 kcal)</span></div><span class="mval" id="mLose">—</span></div>
+    <div class="mrow"><div class="ml"><div class="micon" style="background:rgba(176,122,240,0.12)">📈</div><span class="mname">แคลอรี่เพื่อเพิ่มน้ำหนัก (+500 kcal)</span></div><span class="mval" id="mGain">—</span></div>
+    <div class="mrow"><div class="ml"><div class="micon" style="background:rgba(240,168,122,0.12)">🫀</div><span class="mname">Ponderal Index</span></div><span class="mval" id="mPI">—</span></div>
+    <div class="mrow"><div class="ml"><div class="micon" style="background:rgba(240,122,122,0.12)">⚖️</div><span class="mname">น้ำหนักสูงสุดที่ปลอดภัย (BMI 22.9)</span></div><span class="mval" id="mMaxW">—</span></div>
+    <div class="mrow"><div class="ml"><div class="micon" style="background:rgba(122,180,240,0.12)">🩸</div><span class="mname">น้ำในร่างกาย (โดยประมาณ)</span></div><span class="mval" id="mWater">—</span></div>
+    <div class="mrow"><div class="ml"><div class="micon" style="background:rgba(168,240,122,0.12)">🏃</div><span class="mname">แคลอรี่เผาผลาญ (ออกกำลังกายปานกลาง)</span></div><span class="mval" id="mActive">—</span></div>
+  </div>
+
+  <!-- Health Score -->
+  <p class="sec" id="lblS" style="display:none">คะแนนสุขภาพโดยรวม</p>
+  <div class="scard" id="scard">
+    <div class="score-row">
+      <div>
+        <div style="font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">Health Score</div>
+        <div class="score-big" id="scoreN">—</div>
+        <div class="score-tag" id="scoreTag">—</div>
+      </div>
+      <div class="score-note" id="scoreNote">—</div>
+    </div>
+    <div class="bar-row"><span class="bar-lbl">BMI Score</span><div class="bar-track"><div class="bar-fill" id="bBmi" style="background:var(--green)"></div></div><span class="bar-pct" id="bBmiV">—</span></div>
+    <div class="bar-row"><span class="bar-lbl">น้ำหนัก</span><div class="bar-track"><div class="bar-fill" id="bW" style="background:var(--blue)"></div></div><span class="bar-pct" id="bWV">—</span></div>
+    <div class="bar-row"><span class="bar-lbl">ไขมัน</span><div class="bar-track"><div class="bar-fill" id="bF" style="background:var(--yellow)"></div></div><span class="bar-pct" id="bFV">—</span></div>
+    <div class="bar-row"><span class="bar-lbl">พลังงาน</span><div class="bar-track"><div class="bar-fill" id="bE" style="background:var(--orange)"></div></div><span class="bar-pct" id="bEV">—</span></div>
+  </div>
+
+  <!-- Tips -->
+  <p class="sec" id="lblT" style="display:none">คำแนะนำเพื่อสุขภาพ</p>
+  <div class="tcard" id="tcard">
+    <div class="tgrid" id="tgrid"></div>
+  </div>
+
+  <!-- History -->
+  <p class="sec">ประวัติการวัด</p>
+  <div class="hcard">
+    <div class="hhead"><span class="sec" style="margin:0">บันทึกล่าสุด</span><button class="hclear" onclick="clearH()">ลบทั้งหมด</button></div>
+    <div id="hlist"><div class="hempty">ยังไม่มีประวัติ</div></div>
+  </div>
+
+</div>
+
+<div class="bot"><button class="cta" onclick="calc()">คำนวณ BMI ของฉัน</button></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+let unit='metric',gender='male';
+let hist=JSON.parse(localStorage.getItem('bmi3')||'[]');
+const $=id=>document.getElementById(id);
+
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
+
+function sync(el,vid){
+  $(vid).textContent=parseFloat(el.value);
+  el.style.setProperty('--p',((el.value-el.min)/(el.max-el.min)*100).toFixed(1)+'%');
+}
+function initEl(id,vid){sync($(id),vid);}
+
+function setUnit(u,btn){
+  unit=u;
+  document.querySelectorAll('.up-btn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');
+  const w=$('weight'),h=$('height');
+  if(u==='metric'){w.min=30;w.max=200;w.step=0.5;w.value=65;h.min=100;h.max=220;h.step=1;h.value=170;$('wUnit').textContent='กก.';$('hUnit').textContent='ซม.';}
+  else{w.min=66;w.max=440;w.step=1;w.value=143;h.min=39;h.max=87;h.step=1;h.value=67;$('wUnit').textContent='ปอนด์';$('hUnit').textContent='นิ้ว';}
+  initEl('weight','wVal');initEl('height','hVal');
+}
+function setGender(g){gender=g;$('gM').classList.toggle('on',g==='male');$('gF').classList.toggle('on',g==='female');}
+
+function cls(bmi){
+  if(bmi<16)  return{l:'ผอมมาก',who:'Severe Thinness',c:'#7ab4f0',cb:'rgba(122,180,240,0.1)',rt:'ต่ำ-ปานกลาง',sc:45};
+  if(bmi<17)  return{l:'ผอมปานกลาง',who:'Moderate Thinness',c:'#7ab4f0',cb:'rgba(122,180,240,0.1)',rt:'ปานกลาง',sc:55};
+  if(bmi<18.5)return{l:'ผอมเล็กน้อย',who:'Mild Thinness',c:'#7af0a0',cb:'rgba(122,240,160,0.1)',rt:'ต่ำ',sc:68};
+  if(bmi<23)  return{l:'น้ำหนักปกติ',who:'Normal Weight',c:'#a8f07a',cb:'rgba(168,240,122,0.1)',rt:'ต่ำ',sc:95};
+  if(bmi<25)  return{l:'น้ำหนักเกินเล็กน้อย',who:'Pre-obese',c:'#f0d97a',cb:'rgba(240,217,122,0.1)',rt:'ปานกลาง',sc:72};
+  if(bmi<30)  return{l:'น้ำหนักเกิน',who:'Obese Class I',c:'#f0a87a',cb:'rgba(240,168,122,0.1)',rt:'สูง',sc:50};
+  if(bmi<35)  return{l:'อ้วน',who:'Obese Class II',c:'#f07a7a',cb:'rgba(240,122,122,0.1)',rt:'สูงมาก',sc:35};
+  return{l:'อ้วนมาก',who:'Obese Class III',c:'#f07a7a',cb:'rgba(240,122,122,0.1)',rt:'อันตราย',sc:20};
+}
+
+function tips(bmi){
+  if(bmi<18.5)return[{i:'🥩',t:'เพิ่มโปรตีน',d:'ไข่ เนื้อ ถั่ว ในทุกมื้อ เพื่อสร้างกล้ามเนื้อ'},{i:'🏋️',t:'Weight Training',d:'ออกกำลังกายเสริมสร้างกล้ามเนื้ออย่างน้อย 3 ครั้ง/สัปดาห์'},{i:'🍚',t:'เพิ่มแคลอรี่ดี',d:'ข้าว อะโวคาโด ถั่ว ผลไม้แห้ง'},{i:'🩺',t:'ปรึกษาโภชนาการ',d:'วางแผนเพิ่มน้ำหนักอย่างปลอดภัยกับผู้เชี่ยวชาญ'}];
+  if(bmi<23)return[{i:'🥗',t:'รับประทานสมดุล',d:'ผัก โปรตีน คาร์บ ในสัดส่วนที่เหมาะสม'},{i:'🏃',t:'ออกกำลังสม่ำเสมอ',d:'150 นาที/สัปดาห์ เช่น วิ่ง ว่ายน้ำ ปั่นจักรยาน'},{i:'💧',t:'ดื่มน้ำให้พอ',d:'2–2.5 ลิตรต่อวัน ช่วยเผาผลาญไขมัน'},{i:'😴',t:'นอนหลับ 7–9 ชม.',d:'การนอนที่ดีช่วยควบคุมฮอร์โมนความหิว'}];
+  if(bmi<25)return[{i:'🚶',t:'เดินให้มากขึ้น',d:'10,000 ก้าวต่อวัน เผาผลาญ ~300–400 kcal'},{i:'🍬',t:'ลดน้ำตาลและแป้ง',d:'หลีกเลี่ยงเครื่องดื่มหวาน ขนมกรุบกรอบ'},{i:'🥦',t:'เพิ่มผักใยอาหาร',d:'อิ่มนานขึ้น ลดการกินจุบจิบ'},{i:'📊',t:'ติดตามน้ำหนัก',d:'ชั่งน้ำหนักสัปดาห์ละครั้ง ช่วยตระหนักรู้'}];
+  return[{i:'🏥',t:'พบแพทย์ด่วน',d:'รับคำแนะนำลดน้ำหนักจากผู้เชี่ยวชาญ'},{i:'🚫',t:'หลีกเลี่ยงของทอด',d:'ลดไขมันทรานส์ น้ำตาล และแป้งขัดสี'},{i:'🏊',t:'ออกกำลังกายเบา',d:'ว่ายน้ำ ปั่นจักรยาน ลดแรงกระแทกข้อต่อ'},{i:'🩸',t:'ตรวจสุขภาพ',d:'เบาหวาน ความดัน ไขมัน อย่างน้อยปีละครั้ง'}];
+}
+
+function calc(){
+  let w=parseFloat($('weight').value),h=parseFloat($('height').value);
+  const age=parseInt($('age').value);
+  if(unit==='imperial'){w*=0.453592;h*=2.54;}
+  const hm=h/100,bmi=w/(hm*hm),bmiR=Math.round(bmi*10)/10;
+  const info=cls(bmi);
+  const fmt=kg=>unit==='imperial'?Math.round(kg*2.20462)+' ปอนด์':kg.toFixed(1)+' กก.';
+
+  /* Hero */
+  $('heroNum').textContent=bmiR;$('heroNum').style.color=info.c;
+  $('heroSt').textContent=info.l;$('heroSt').style.color=info.c;
+  $('heroWho').textContent=info.who;
+  const rp=$('heroRisk');rp.textContent='ความเสี่ยง: '+info.rt;rp.style.background=info.cb;rp.style.color=info.c;
+
+  /* Gauge arc */
+  const arcPct=Math.min(Math.max((bmi-10)/30,0),1);
+  const arc=$('gArc');
+  arc.style.strokeDashoffset=(252*(1-arcPct)).toFixed(1);
+  arc.setAttribute('stroke',info.c);
+  const ang=Math.PI*(1-arcPct);
+  const cx=105+80*Math.cos(Math.PI-ang),cy=105-80*Math.sin(Math.PI-ang);
+  $('gDot').setAttribute('cx',cx.toFixed(1));$('gDot').setAttribute('cy',cy.toFixed(1));
+
+  /* Zone dot */
+  const zp=Math.min(Math.max((bmi-10)/30*100,2),98);
+  $('zDot').style.left=zp+'%';
+
+  /* Main stats */
+  const iMin=Math.round(18.5*hm*hm*10)/10,iMax=Math.round(22.9*hm*hm*10)/10;
+  const mid=(iMin+iMax)/2,diff=Math.round((w-mid)*10)/10;
+  $('sIdeal').textContent=fmt(iMin)+' – '+fmt(iMax);
+  $('sDiff').textContent=(diff>0?'+':'')+fmt(diff);
+  $('sDiffS').textContent=diff>0?'เกินน้ำหนักปกติ':diff<0?'ต่ำกว่าน้ำหนักปกติ':'อยู่ในเกณฑ์พอดี';
+  const bmr=gender==='male'?10*w+6.25*h-5*age+5:10*w+6.25*h-5*age-161;
+  const tdee=Math.round(bmr*1.375);
+  $('sBMR').textContent=Math.round(bmr);$('sTDEE').textContent=tdee;
+
+  /* Detailed metrics */
+  const bf=Math.max((1.2*bmi)+(0.23*age)-(10.8*(gender==='male'?1:0))-5.4,3);
+  $('mFat').textContent=bf.toFixed(1)+'%';
+  const devine=Math.max(gender==='male'?50+2.3*(h/2.54-60):45.5+2.3*(h/2.54-60),30);
+  $('mDevine').textContent=fmt(Math.round(devine*10)/10);
+  $('mLose').textContent=Math.round(tdee-500)+' kcal';
+  $('mGain').textContent=Math.round(tdee+500)+' kcal';
+  $('mPI').textContent=(w/Math.pow(hm,3)).toFixed(1)+' kg/m³';
+  $('mMaxW').textContent=fmt(iMax);
+  $('mWater').textContent=Math.round(w*0.6*10)/10+' ลิตร';
+  $('mActive').textContent=Math.round(bmr*1.55)+' kcal/วัน';
+
+  /* Score */
+  const sc=info.sc;
+  const stag=sc>=90?'ยอดเยี่ยม':sc>=75?'ดีมาก':sc>=60?'ดี':sc>=45?'ควรปรับปรุง':'ต้องดูแลเร่งด่วน';
+  $('scoreN').textContent=sc;$('scoreN').style.color=info.c;
+  $('scoreTag').textContent=stag;
+  $('scoreNote').textContent=sc>=90?'น้ำหนักอยู่ในเกณฑ์ที่ดีมาก รักษาพฤติกรรมสุขภาพที่ดีต่อไป!':sc>=60?'ใกล้เคียงเกณฑ์ปกติแล้ว ปรับนิดเดียวก็ดีขึ้นได้มาก':'ควรปรึกษาผู้เชี่ยวชาญเพื่อวางแผนดูแลสุขภาพอย่างจริงจัง';
+  const ws=Math.max(0,100-Math.abs(diff/mid)*150);
+  const fs=bf>35?20:bf>30?40:bf>25?60:bf>20?78:90;
+  const es=Math.min(100,Math.round(bmr/14));
+  function setBar(fid,vid,pct){$(fid).style.width=pct+'%';$(vid).textContent=pct+'%';}
+  setBar('bBmi','bBmiV',sc);setBar('bW','bWV',Math.round(ws));setBar('bF','bFV',fs);setBar('bE','bEV',Math.min(es,100));
+
+  /* Tips */
+  $('tgrid').innerHTML=tips(bmi).map(t=>`<div class="tbox"><div class="tbox-icon">${t.i}</div><div class="tbox-title">${t.t}</div><div class="tbox-desc">${t.d}</div></div>`).join('');
+
+  /* Show */
+  ['hero','mcard','scard','tcard'].forEach(id=>{const el=$(id);el.classList.add('show');el.style.animation='none';requestAnimationFrame(()=>{el.style.animation='fadeUp .4s ease both';});});
+  ['lblM','lblS','lblT'].forEach(id=>$(id).style.display='block');
+
+  /* History */
+  hist.unshift({bmi:bmiR,l:info.l,c:info.c,w:w.toFixed(1),h:h.toFixed(1),age,time:Date.now()});
+  if(hist.length>20)hist.pop();
+  localStorage.setItem('bmi3',JSON.stringify(hist));
+  renderH();toast('คำนวณเสร็จแล้ว ✓');
+  setTimeout(()=>$('hero').scrollIntoView({behavior:'smooth',block:'start'}),120);
+}
+
+function renderH(){
+  if(!hist.length){$('hlist').innerHTML='<div class="hempty">ยังไม่มีประวัติ</div>';return;}
+  $('hlist').innerHTML=hist.slice(0,8).map(r=>{
+    const d=new Date(r.time),ts=d.toLocaleDateString('th-TH',{day:'numeric',month:'short'})+' '+d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+    return`<div class="hitem"><div class="hdot" style="background:${r.c}"></div><div class="hinfo"><div class="hbmi" style="color:${r.c}">${r.bmi}</div><div class="hmeta">${r.w} กก. · ${r.h} ซม. · ${r.age} ปี</div></div><div class="hright"><div class="hstatus" style="color:${r.c}">${r.l}</div><div class="htime">${ts}</div></div></div>`;
+  }).join('');
+}
+function clearH(){hist=[];localStorage.removeItem('bmi3');renderH();toast('ลบประวัติแล้ว');}
+
+initEl('weight','wVal');initEl('height','hVal');initEl('age','aVal');renderH();
+</script>
+</body>
+</html>
